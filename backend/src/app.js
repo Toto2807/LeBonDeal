@@ -6,6 +6,7 @@ import { authRouter } from './routes/authRoutes.js';
 import { categoryRouter } from './routes/categoryRoutes.js';
 import { adRouter } from './routes/adRoutes.js';
 import { favoriteRouter } from './routes/favoriteRoutes.js';
+import { userRouter } from './routes/userRoutes.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 
 const app = express();
@@ -25,7 +26,8 @@ app.use('/api/auth', authRouter);
 app.use('/api/categories', categoryRouter);
 app.use('/api/ads', adRouter);
 app.use('/api/favorites', favoriteRouter);
-// À ajouter au fil des phases : /api/conversations, /api/users, /api/reviews, /api/reports… (voir le contrat d'API)
+app.use('/api/users', userRouter);
+// À ajouter au fil des phases : /api/conversations, /api/reviews, /api/reports… (voir le contrat d'API)
 
 app.use(errorHandler); // toujours en dernier
 

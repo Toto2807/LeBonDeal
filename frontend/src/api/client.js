@@ -3,6 +3,11 @@
 let accessToken = null;
 export const setAccessToken = (token) => { accessToken = token; };
 
+// Appelé quand le serveur refuse le jeton qu'on lui a envoyé (session expirée) : l'application déconnecte l'utilisateur.
+// Pas déclenché pour un mauvais mot de passe (INVALID_CREDENTIALS) ni pour un visiteur sans jeton.
+let unauthorizedHandler = null;
+export const setUnauthorizedHandler = (handler) => { unauthorizedHandler = handler; };
+
 export class ApiError extends Error {
   constructor(status, body) {
     super(body?.error?.message ?? `Erreur ${status}`);
@@ -30,6 +35,10 @@ export async function api(path, { method = 'GET', body, params, signal } = {}) {
   });
 
   const payload = response.status === 204 ? null : await response.json().catch(() => null);
-  if (!response.ok) throw new ApiError(response.status, payload);
+  if (!response.ok) {
+    const code = payload?.error?.code;
+    if (response.status === 401 && accessToken && (code === 'TOKEN_INVALID' || code === 'TOKEN_MISSING')) unauthorizedHandler?.();
+    throw new ApiError(response.status, payload);
+  }
   return payload;
 }

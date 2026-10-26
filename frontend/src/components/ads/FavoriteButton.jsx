@@ -24,7 +24,7 @@ export default function FavoriteButton({ adId, className = '' }) {
     // Mise à jour optimiste : le cœur change tout de suite, sans attendre la réponse du serveur…
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: KEY });
-      const previous = queryClient.getQueryData(KEY);
+      const previous = queryClient.getQueryData(KEY) ?? []; // la liste peut ne pas être encore arrivée
       queryClient.setQueryData(KEY, isFavorite ? previous.filter((id) => id !== adId) : [...previous, adId]);
       return { previous };
     },
@@ -44,7 +44,7 @@ export default function FavoriteButton({ adId, className = '' }) {
       onClick={onClick}
       aria-pressed={isFavorite}
       aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-      className={`rounded-full bg-white/90 p-2 shadow ${className}`}
+      className={`grid size-11 place-items-center rounded-full bg-white/90 shadow ${className}`}
     >
       <Heart size={20} className={isFavorite ? 'fill-brand-600 text-brand-600' : 'text-gray-600'} />
     </button>

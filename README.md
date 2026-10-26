@@ -7,6 +7,18 @@ Site de petites annonces entre particuliers (projet étudiant Full Stack JS) : d
 - **Bases de données** : PostgreSQL (utilisateurs, annonces, favoris, ventes, avis) et MongoDB (champs propres à chaque catégorie, messagerie, statistiques)
 - **Docker** : une commande lance les quatre services
 
+## Où en est le projet
+
+| Phase | Contenu | État |
+|---|---|---|
+| 0 — Fondations | Docker, PostgreSQL, MongoDB, squelette backend, thème frontend | ✅ |
+| 1 — Catalogue | inscription / connexion, accueil, recherche avec filtres, fiche annonce, dépôt en 5 étapes avec photos, modification, statut (réservée, vendue, archivée), mes annonces | ✅ |
+| 2 — Interaction | favoris (page), messagerie en direct, signalement | à faire |
+| 3 — Confiance | ventes et avis, profil vendeur, recherche par distance, carte | à faire |
+| 4 — Finitions | modération, statistiques, accessibilité, version de démonstration | à faire |
+
+Les routes « Messages » et « Favoris » de l'en-tête affichent pour l'instant une page « bientôt disponible ».
+
 Toute la conception est dans [`docs/superpowers/specs/2026-10-26-lebondeal-design.md`](docs/superpowers/specs/2026-10-26-lebondeal-design.md) et [`docs/lebondeal/`](docs/lebondeal/).
 
 ## Prérequis

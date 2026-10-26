@@ -1,7 +1,7 @@
 # LeBonDeal — Frontend : tout ce que je ferais
 
 > Partie 1/5 du dossier de conception. Vue d'ensemble : [`2026-10-26-lebondeal-design.md`](../superpowers/specs/2026-10-26-lebondeal-design.md). Données consommées : [05 — Backend](05-backend.md) (contrat d'API).
-> Le code de ce document compile (`vite build`), ses tests passent (`vitest`), et il dialogue avec le vrai backend. Il n'a **pas** été affiché dans un navigateur : les maquettes et le rendu restent à valider à l'écran (voir § 17).
+> Le code de ce document compile (`vite build`), ses tests passent (`vitest`), et il dialogue avec le vrai backend. **Mise à jour phase 1 (2026-10-26)** : les écrans du catalogue sont écrits dans `frontend/src` et ont été parcourus dans un vrai navigateur (voir § 17) ; **le code du dépôt fait foi**, les extraits ci-dessous sont le point de départ de la phase 0.
 
 ## 1. Ce que doit permettre le site
 
@@ -293,7 +293,7 @@ npm test -w frontend
 
 ## 15. Le code livré
 
-Fichiers déjà écrits et testés. Ils remplacent ceux du starter portant le même nom (`main.jsx`, `App.jsx`, `Layout.jsx`, `Header.jsx`, `index.css`, `vite.config.js`) ou s'ajoutent. `Home.jsx`, `AdDetail.jsx`, `PostAd.jsx`, etc. restent à écrire.
+Fichiers déjà écrits et testés. Ils remplacent ceux du starter portant le même nom (`main.jsx`, `App.jsx`, `Layout.jsx`, `Header.jsx`, `index.css`, `vite.config.js`) ou s'ajoutent. (Phase 1 : `Home`, `Search`, `AdDetail`, `Login`, `Register`, `PostAd` et l'espace « Mes annonces » sont écrits dans `frontend/src/pages`, et plusieurs fichiers ci-dessous ont évolué ; le dépôt est la référence.)
 
 **`frontend/src/index.css`**
 
@@ -1118,7 +1118,9 @@ import '@testing-library/jest-dom/vitest';
 ```
 ## 16. Ce qui reste à écrire dans ce plan
 
-Pages : `Home`, `AdDetail`, `SellerProfile`, `Login`, `Register`, `PostAd`, `NotFound`, et l'espace `account/*`. Composants : `ImageUploader`, `CityPicker`, `Stepper`, `Gallery`, `ChatWindow`, `ConversationList`, `Skeleton`, `Pagination`, etc. Le `useAuth` n'appelle pas encore `connectSocket` à la connexion (une ligne à ajouter avec la messagerie).
+**Fait en phase 1** : pages `Home`, `Search`, `AdDetail`, `Login`, `Register`, `PostAd` (dépôt et modification), `MyAds`, `NotFound` ; composants `ImageUploader`, `CityPicker`, `Stepper`, `Gallery`, `ExistingImages`, `Skeleton`, `Pagination`, `ConfirmDialog`.
+
+**Reste à écrire** : pages `SellerProfile` (phase 3), `Favorites`, `Messages` et `Profile` (phase 2, pages provisoires « bientôt disponible » en attendant) ; composants `ChatWindow`, `ConversationList`. Le `useAuth` n'appelle pas encore `connectSocket` à la connexion (une ligne à ajouter avec la messagerie).
 
 ## 17. Ce qui a été vérifié
 
@@ -1129,4 +1131,6 @@ Pages : `Home`, `AdDetail`, `SellerProfile`, `Login`, `Register`, `PostAd`, `Not
 - Le proxy Vite achemine `/api/categories`, `/api/ads?...`, `/api/auth/login` vers le vrai backend, et les réponses ont exactement la forme attendue par `AdCard` et `FilterPanel`.
 - Contrastes de couleur calculés.
 
-**Non vérifié** : le rendu dans un navigateur (aucune capture d'écran n'a été faite), le comportement réel de `FavoriteButton`, `FilterPanel`, `DynamicFields` et `useMessages` avec un utilisateur (ils compilent mais n'ont pas de test de composant), Leaflet, l'adaptation mobile, l'accessibilité au lecteur d'écran. Les maquettes ci-dessus sont des schémas, pas un design validé : je peux produire de vraies maquettes visuelles dans le navigateur si vous le souhaitez.
+**Vérifié en phase 1** (2026-10-26) : 36 fichiers de test, 259 tests (composants, pages, API simulée) ; `vite build` : 2221 modules, sans erreur ; parcours complet dans le navigateur intégré avec un compte du seed : dépôt d'une voiture avec 3 photos et ses champs, recherche avec le filtre « Diesel », modification, marquage « vendue » (la fiche reste visible, la recherche ne la montre plus), suppression, visiteur invité à se connecter ; largeur 375 px sans défilement horizontal sur l'accueil, la recherche, la fiche, le dépôt et « Mon compte » ; cibles tactiles de 44 px (en-tête, cœur des favoris) ; premier champ invalide mis en focus à chaque étape du dépôt.
+
+**Non vérifié** : Leaflet (phase 3), `useMessages` avec un utilisateur (phase 2), le rendu avec un vrai lecteur d'écran (les rôles, libellés, `aria-invalid` et `aria-describedby` sont testés, mais pas écoutés), les performances sur un téléphone réel. Les maquettes ci-dessus sont des schémas, pas un design validé.

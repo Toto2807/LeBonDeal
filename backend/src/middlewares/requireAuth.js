@@ -17,6 +17,20 @@ export function requireAuth(req, _res, next) {
   next();
 }
 
+// Comme requireAuth, mais un jeton absent ou invalide n'est pas une erreur : le visiteur est simplement anonyme.
+export function optionalAuth(req, _res, next) {
+  const [scheme, token] = (req.header('Authorization') ?? '').split(' ');
+  if (scheme === 'Bearer' && token) {
+    try {
+      const payload = jwt.verify(token, config.jwtSecret);
+      req.user = { id: payload.sub, role: payload.role };
+    } catch {
+      // jeton invalide ou expiré : on continue en visiteur anonyme
+    }
+  }
+  next();
+}
+
 export const requireRole = (role) => (req, _res, next) => {
   if (req.user?.role !== role) throw new HttpError(403, 'FORBIDDEN', 'Accès refusé');
   next();

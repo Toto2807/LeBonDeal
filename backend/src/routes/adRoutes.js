@@ -1,11 +1,16 @@
 import { Router } from 'express';
 import * as adController from '../controllers/adController.js';
-import { requireAuth } from '../middlewares/requireAuth.js';
+import { optionalAuth, requireAuth } from '../middlewares/requireAuth.js';
 import { uploadPhotos } from '../middlewares/upload.js';
 
 export const adRouter = Router();
 
 adRouter.get('/', adController.search);
+adRouter.get('/:id', optionalAuth, adController.getOne);
 adRouter.post('/', requireAuth, adController.create);
+adRouter.patch('/:id', requireAuth, adController.update);
+adRouter.delete('/:id', requireAuth, adController.remove);
+adRouter.patch('/:id/status', requireAuth, adController.changeStatus);
 adRouter.post('/:id/images', requireAuth, uploadPhotos, adController.uploadImages);
-// Phase 1 à compléter : GET /:id, PATCH /:id, DELETE /:id, PATCH /:id/status (voir le contrat d'API)
+adRouter.patch('/:id/images/order', requireAuth, adController.reorderImages);
+adRouter.delete('/:id/images/:imageId', requireAuth, adController.removeImage);

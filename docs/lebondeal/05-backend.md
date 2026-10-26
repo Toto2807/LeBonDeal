@@ -87,13 +87,13 @@ Relevés en lisant le code existant ; les fichiers livrés plus bas les corrigen
 | ✅ | `GET /api/categories` | 🔓 | — | arbre `[{ id, slug, name, icon, children }]` |
 | ✅ | `GET /api/categories/:slug/schema` | 🔓 | — | `{ categorySlug, fields }` (MongoDB) |
 | ✅ | `GET /api/ads` | 🔓 | `q, category, priceMin, priceMax` (centimes), `lat, lng, radiusKm, sort (recent\|price_asc\|price_desc\|distance), page, limit, attr.*` | `data: [{ id, title, priceCents, city, coverUrl, publishedAt, distanceKm }]`, `meta` |
-| ⬜ P1 | `GET /api/ads/:id` | 🔓 | — | annonce complète + photos + `attributes` (Mongo) + vendeur (`ratingAvg`, `ratingCount`) + `priceHint` |
+| ✅ | `GET /api/ads/:id` | 🔓 (jeton facultatif) | — | annonce complète : `category` (avec parent), `images`, `attributes` (Mongo), `seller` (`ratingAvg`, `ratingCount`, `activeAdsCount`), `priceHint` · 404 si l'annonce est supprimée, ou non publique et que le visiteur n'en est pas le propriétaire |
 | ✅ | `POST /api/ads` | 🔐 | `createAdSchema` (voir ci-dessous) | 201 annonce créée |
-| ⬜ P1 | `PATCH /api/ads/:id`, `DELETE /api/ads/:id` | 🔐 propriétaire | champs modifiables / — | annonce mise à jour / 204 (statut `deleted`) |
-| ⬜ P1 | `PATCH /api/ads/:id/status` | 🔐 propriétaire | `{ status, buyerId? }` — `sold` crée la vente (`transactions`) | annonce |
+| ✅ | `PATCH /api/ads/:id`, `DELETE /api/ads/:id` | 🔐 propriétaire | champs modifiables (la catégorie ne change pas) / — | annonce mise à jour / 204 (statut `deleted`) · 409 `AD_NOT_EDITABLE` si l'annonce est vendue ; une annonce supprimée est introuvable (404) |
+| ✅ | `PATCH /api/ads/:id/status` | 🔐 propriétaire | `{ status, buyerId? }` — `sold` crée la vente (`transactions`) si un acheteur est indiqué | annonce · 409 `INVALID_TRANSITION` |
 | ✅ | `POST /api/ads/:id/images` | 🔐 propriétaire | multipart, champ `photos` (≤ 10, ≤ 8 Mo) | 201 `[{ id, url, thumbUrl, position }]` |
-| ⬜ P1 | `DELETE /api/ads/:id/images/:imageId`, `PATCH /api/ads/:id/images/order` | 🔐 propriétaire | — / `{ ids: […] }` | 204 / 200 |
-| ⬜ P1 | `GET /api/users/me/ads` | 🔐 | `status?` | mes annonces |
+| ✅ | `DELETE /api/ads/:id/images/:imageId`, `PATCH /api/ads/:id/images/order` | 🔐 propriétaire | — / `{ ids: […] }` (toutes les photos, dans le nouvel ordre) | 204 / 200 |
+| ✅ | `GET /api/users/me/ads` | 🔐 | `status?`, `page`, `limit` | mes annonces, tous statuts confondus sauf les supprimées · `meta` : pagination |
 | ✅ | `GET /api/favorites/ids` | 🔐 | — | `["adId", …]` |
 | ✅ | `PUT /api/favorites/:adId`, `DELETE /api/favorites/:adId` | 🔐 | — | 204 (idempotent) |
 | ⬜ P2 | `GET /api/favorites` | 🔐 | `page` | cartes d'annonces favorites |
@@ -446,15 +446,20 @@ export async function uploadImages(req, res) {
 ```js
 import { Router } from 'express';
 import * as adController from '../controllers/adController.js';
-import { requireAuth } from '../middlewares/requireAuth.js';
+import { optionalAuth, requireAuth } from '../middlewares/requireAuth.js';
 import { uploadPhotos } from '../middlewares/upload.js';
 
 export const adRouter = Router();
 
 adRouter.get('/', adController.search);
+adRouter.get('/:id', optionalAuth, adController.getOne);
 adRouter.post('/', requireAuth, adController.create);
+adRouter.patch('/:id', requireAuth, adController.update);
+adRouter.delete('/:id', requireAuth, adController.remove);
+adRouter.patch('/:id/status', requireAuth, adController.changeStatus);
 adRouter.post('/:id/images', requireAuth, uploadPhotos, adController.uploadImages);
-// Phase 1 à compléter : GET /:id, PATCH /:id, DELETE /:id, PATCH /:id/status (voir le contrat d'API)
+adRouter.patch('/:id/images/order', requireAuth, adController.reorderImages);
+adRouter.delete('/:id/images/:imageId', requireAuth, adController.removeImage);
 ```
 **`backend/src/services/categoryService.js`**
 

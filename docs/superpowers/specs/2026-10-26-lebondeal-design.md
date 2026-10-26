@@ -1,6 +1,6 @@
 # LeBonDeal — Conception du projet
 
-**Date** : 2026-10-26 · **Statut** : validé par l'utilisateur le 2026-10-26 ; **phase 0 réalisée** (plan : `docs/superpowers/plans/2026-10-26-lebondeal-phase-0.md`) · **Langue** : français (comme le starter)
+**Date** : 2026-10-26 · **Statut** : validé par l'utilisateur le 2026-10-26 ; **phase 0 réalisée** (plan : `docs/superpowers/plans/2026-10-26-lebondeal-phase-0.md`) ; **phase 1 réalisée** (plan : `docs/superpowers/plans/2026-10-26-lebondeal-phase-1.md`) · **Langue** : français (comme le starter)
 
 ## 1. En bref
 
