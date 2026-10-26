@@ -1,0 +1,109 @@
+# LeBonDeal : environnement de DÉVELOPPEMENT
+#   docker compose up --build --watch      (tout lancer, avec rechargement automatique du code)
+#   docker compose up -d postgres mongo    (seulement les bases, pour lancer le code avec « npm run dev »)
+name: lebondeal
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  mongo:
+    image: mongo:8
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: lebondeal
+      MONGO_APP_USER: ${MONGO_APP_USER}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD}
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongodata:/data/db
+      - ./database/mongo/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      # Connexion avec l'utilisateur applicatif : ne passe au vert qu'une fois le script d'init terminé
+      test: ["CMD-SHELL", "mongosh \"mongodb://$${MONGO_APP_USER}:$${MONGO_APP_PASSWORD}@localhost:27017/lebondeal?authSource=lebondeal\" --quiet --eval 'quit(db.runCommand({ping:1}).ok ? 0 : 1)'"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      MONGODB_URI: mongodb://${MONGO_APP_USER}:${MONGO_APP_PASSWORD}@mongo:27017/lebondeal?authSource=lebondeal
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      UPLOAD_DIR: /app/backend/uploads
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    volumes:
+      - uploads:/app/backend/uploads
+    develop:
+      watch:
+        - action: sync+restart    # le code est copié puis le conteneur redémarre (~2 s) : fiable à chaque modification
+          path: ./backend/src
+          target: /app/backend/src
+        - action: rebuild         # nouvelle dépendance : l'image est reconstruite
+          path: ./backend/package.json
+        - action: rebuild
+          path: ./package-lock.json
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      target: dev
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      VITE_PROXY_TARGET: http://backend:3000   # le proxy Vite vise le service « backend », pas localhost
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend/src
+          target: /app/frontend/src
+        - action: sync
+          path: ./frontend/index.html
+          target: /app/frontend/index.html
+        - action: sync+restart
+          path: ./frontend/vite.config.js
+          target: /app/frontend/vite.config.js
+        - action: rebuild
+          path: ./frontend/package.json
+
+volumes:
+  pgdata:
+  mongodata:
+  uploads:

@@ -1,60 +1,25 @@
-:root {
-  font-family: Arial, sans-serif;
-  color: #1f2937;
-  background: #f8fafc;
+@import "tailwindcss";
+
+/* Identité visuelle : orange chaleureux + gris neutres. Tailwind génère bg-brand-500, text-brand-700, etc.
+   Contrastes (WCAG, calculés) : texte sombre sur brand-500 = 5,2:1 ; texte brand-700 sur blanc = 4,8:1.
+   À ÉVITER : texte blanc sur brand-500 (2,8:1) et texte brand-500 sur blanc (2,8:1). */
+@theme {
+  --color-brand-50: #fff4ec;
+  --color-brand-100: #ffe3cf;
+  --color-brand-400: #ff8a42;
+  --color-brand-500: #ff6e14;
+  --color-brand-600: #e85d04;
+  --color-brand-700: #c24d03;
+  --color-ink: #1f2937;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-}
-
-.layout {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.header,
-.footer {
-  padding: 1rem clamp(1.25rem, 5vw, 4rem);
-  background: #1e3a5f;
-  color: white;
-}
-
-.header p {
-  margin: 0;
-  font-weight: 700;
-}
-
-.content {
-  width: min(100% - 2.5rem, 72rem);
-  margin: 0 auto;
-  flex: 1;
-  display: grid;
-  place-items: center;
-}
-
-.home {
-  width: 100%;
-  padding: 3rem 0;
-}
-
-.home h1 {
-  margin: 0 0 1rem;
-  font-size: clamp(2rem, 6vw, 3.5rem);
-}
-
-.home p {
-  margin: 0;
-  font-size: 1.125rem;
-  line-height: 1.6;
-}
-
-.footer {
-  text-align: center;
-  font-size: 0.875rem;
+@layer base {
+  body {
+    @apply bg-gray-50 font-sans text-ink antialiased;
+  }
+  /* Focus visible partout : indispensable pour la navigation au clavier */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-700;
+  }
 }

@@ -1,11 +1,12 @@
-import 'dotenv/config';
 import app from './app.js';
-import { connectDb } from './config/db.js'
-import { config } from './config/env.js'
+import { config, assertConfig } from './config/env.js';
+import { connectDb } from './config/db.js';
+import { pool } from './config/postgres.js';
+
+assertConfig();
 await connectDb(config.mongoUri);
+await pool.query('SELECT 1'); // échoue tout de suite, avec un message clair, si PostgreSQL est injoignable
 
-const port = Number(process.env.PORT) || 3000;
-
-app.listen(port, () => {
-  console.log(`API disponible sur http://localhost:${port}`);
+app.listen(config.port, () => {
+  console.log(`API disponible sur http://localhost:${config.port}`);
 });
